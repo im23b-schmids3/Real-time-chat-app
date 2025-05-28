@@ -1,11 +1,18 @@
-package com.example.model;
+package com.example.chatapp.model;
 
 public class ChatMessage {
     private String sender;
     private String content;
     private String timestamp;
 
-    // Getter & Setter
+    public ChatMessage() {}
+
+    public ChatMessage(String sender, String content, String timestamp) {
+        this.sender = sender;
+        this.content = content;
+        this.timestamp = timestamp;
+    }
+
     public String getSender() {
         return sender;
     }
@@ -22,11 +29,11 @@ public class ChatMessage {
         this.content = content;
     }
 
-    public String getTimestamp() {
+    public String getTimestamp() {  // 👈 Getter für timestamp
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(String timestamp) {  // 👈 Setter für timestamp
         this.timestamp = timestamp;
     }
 }
