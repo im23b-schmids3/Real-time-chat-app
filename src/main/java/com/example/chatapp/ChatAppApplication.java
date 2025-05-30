@@ -10,6 +10,7 @@ public class ChatAppApplication {
 
         Dotenv dotenv = Dotenv.load();
         System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
+        System.setProperty("SECRET_KEY", dotenv.get("SECRET_KEY"));
 
         SpringApplication.run(ChatAppApplication.class, args);
     }
