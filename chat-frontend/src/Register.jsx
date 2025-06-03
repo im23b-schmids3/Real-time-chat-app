@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './styles/common.css';
 
 function Register({ onSwitch }) {
     const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
@@ -45,12 +46,13 @@ function Register({ onSwitch }) {
     };
 
     return (
-        <div style={styles.container}>
-            <h2>Registrierung</h2>
-            {error && <div style={styles.error}>{error}</div>}
-            {success && <div style={styles.success}>{success}</div>}
-            <form onSubmit={handleSubmit} style={styles.form}>
+        <div className="auth-container">
+            <h2 style={{ textAlign: 'center', marginBottom: '20px', color: 'var(--secondary-color)' }}>Registrierung</h2>
+            {error && <div className="error-message">{error}</div>}
+            {success && <div className="success-message">{success}</div>}
+            <form onSubmit={handleSubmit} className="auth-form">
                 <input
+                    className="auth-input"
                     name="name"
                     placeholder="Benutzername"
                     value={form.name}
@@ -58,6 +60,7 @@ function Register({ onSwitch }) {
                     required
                 />
                 <input
+                    className="auth-input"
                     name="email"
                     type="email"
                     placeholder="E-Mail"
@@ -66,6 +69,7 @@ function Register({ onSwitch }) {
                     required
                 />
                 <input
+                    className="auth-input"
                     name="password"
                     type="password"
                     placeholder="Passwort"
@@ -74,6 +78,7 @@ function Register({ onSwitch }) {
                     required
                 />
                 <input
+                    className="auth-input"
                     name="confirmPassword"
                     type="password"
                     placeholder="Passwort bestätigen"
@@ -81,42 +86,16 @@ function Register({ onSwitch }) {
                     onChange={handleChange}
                     required
                 />
-                <button type="submit">Registrieren</button>
+                <button type="submit" className="auth-button">Registrieren</button>
             </form>
-            <p>
+            <p style={{ textAlign: 'center', marginTop: '20px' }}>
                 Bereits registriert?{' '}
-                <span style={styles.link} onClick={onSwitch}>
+                <span className="auth-link" onClick={onSwitch}>
                     Jetzt einloggen
                 </span>
             </p>
         </div>
     );
 }
-
-const styles = {
-    container: {
-        maxWidth: 400,
-        margin: '50px auto',
-        padding: 20,
-        textAlign: 'center'
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10
-    },
-    error: {
-        color: 'red',
-        marginBottom: 10
-    },
-    success: {
-        color: 'green',
-        marginBottom: 10
-    },
-    link: {
-        color: '#007bff',
-        cursor: 'pointer'
-    }
-};
 
 export default Register;

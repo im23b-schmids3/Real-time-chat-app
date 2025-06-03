@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './styles/common.css';
 
 function Login({ onSwitch, onLoginSuccess }) {
     const [form, setForm] = useState({ name: '', password: '' });
@@ -21,7 +22,6 @@ function Login({ onSwitch, onLoginSuccess }) {
             const token = await response.text();
             if (!response.ok) throw new Error(token);
 
-
             localStorage.setItem('token', token);
             onLoginSuccess(form.name);
         } catch (err) {
@@ -30,29 +30,35 @@ function Login({ onSwitch, onLoginSuccess }) {
     };
 
     return (
-        <div style={styles.container}>
-            <h2>Login</h2>
-            {error && <div style={styles.error}>{error}</div>}
-            <form onSubmit={handleSubmit} style={styles.form}>
-                <input name="name" placeholder="Benutzername" onChange={handleChange} required />
-                <input name="password" type="password" placeholder="Passwort" onChange={handleChange} required />
-                <button type="submit">Login</button>
+        <div className="auth-container">
+            <h2 style={{ textAlign: 'center', marginBottom: '20px', color: 'var(--secondary-color)' }}>Login</h2>
+            {error && <div className="error-message">{error}</div>}
+            <form onSubmit={handleSubmit} className="auth-form">
+                <input
+                    className="auth-input"
+                    name="name"
+                    placeholder="Benutzername"
+                    onChange={handleChange}
+                    required
+                />
+                <input
+                    className="auth-input"
+                    name="password"
+                    type="password"
+                    placeholder="Passwort"
+                    onChange={handleChange}
+                    required
+                />
+                <button type="submit" className="auth-button">Login</button>
             </form>
-            <p>
+            <p style={{ textAlign: 'center', marginTop: '20px' }}>
                 Noch kein Konto?{' '}
-                <span style={styles.link} onClick={onSwitch}>
+                <span className="auth-link" onClick={onSwitch}>
                     Jetzt registrieren
                 </span>
             </p>
         </div>
     );
 }
-
-const styles = {
-    container: { maxWidth: 400, margin: '50px auto', padding: 20, textAlign: 'center' },
-    form: { display: 'flex', flexDirection: 'column', gap: 10 },
-    error: { color: 'red' },
-    link: { color: '#007bff', cursor: 'pointer' },
-};
 
 export default Login;
