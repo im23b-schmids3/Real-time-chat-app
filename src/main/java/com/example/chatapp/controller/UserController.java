@@ -2,11 +2,15 @@ package com.example.chatapp.controller;
 
 import com.example.chatapp.User;
 import com.example.chatapp.repository.UserRepository;
+import com.example.chatapp.repository.PrivateMessageRepository;
+import com.example.chatapp.model.PrivateMessage;
 import com.example.chatapp.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -22,6 +26,9 @@ public class UserController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private PrivateMessageRepository privateMessageRepository;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
@@ -56,5 +63,24 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Fehler beim Login: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/users/search")
+    public ResponseEntity<?> searchUser(@RequestParam String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        user.setPassword(null);
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/messages/{otherId}")
+    public ResponseEntity<?> getMessages(@PathVariable Integer otherId, Principal principal) {
+        User current = userRepository.findByName(principal.getName());
+        List<PrivateMessage> msgs = privateMessageRepository
+                .findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderByTimestampAsc(
+                        current.getId(), otherId, otherId, current.getId());
+        return ResponseEntity.ok(msgs);
     }
 }
