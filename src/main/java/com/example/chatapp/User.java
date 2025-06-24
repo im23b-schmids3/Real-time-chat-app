@@ -11,7 +11,8 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UserID", nullable = false, unique = true)
-    private int id;
+    // Use Integer to allow null before the entity is persisted
+    private Integer id;
 
     @Column(name = "Name", nullable = false)
     private String name;
