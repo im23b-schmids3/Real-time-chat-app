@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+// allowCredentials expects a boolean value
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = true)
 public class UserController {
 
     @Autowired
