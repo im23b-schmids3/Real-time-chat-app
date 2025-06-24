@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import Register from './Register';
 import Login from './Login';
-import App from './App';
+import PrivateChat from './components/PrivateChat.jsx';
 
 function AuthWrapper() {
     const [isRegistering, setIsRegistering] = useState(true);
     const [user, setUser] = useState(null);
 
     if (user) {
-        return <App username={user} />;
+        return <PrivateChat username={user} />;
     }
 
     return isRegistering ? (
