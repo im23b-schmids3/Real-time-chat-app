@@ -29,11 +29,11 @@ public class ChatMessage {
         this.content = content;
     }
 
-    public String getTimestamp() {  // 👈 Getter für timestamp
+    public String getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {  // 👈 Setter für timestamp
+    public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
 }

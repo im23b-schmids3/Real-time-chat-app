@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 // allowCredentials expects a boolean value
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = true)
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController {
 
     @Autowired
