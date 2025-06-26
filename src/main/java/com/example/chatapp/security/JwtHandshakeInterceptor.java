@@ -6,6 +6,7 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.http.server.ServletServerHttpRequest;
 import java.net.URI;
 
@@ -44,8 +45,9 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                 if (secret == null) {
                     secret = System.getProperty("SECRET_KEY");
                 }
-                Claims claims = Jwts.parser()
-                        .setSigningKey(secret)
+                Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+                        .build()
                         .parseClaimsJws(token)
                         .getBody();
                 String username = claims.getSubject();

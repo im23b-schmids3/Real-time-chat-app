@@ -9,6 +9,7 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 import java.security.Principal;
 
@@ -18,7 +19,7 @@ public class StompAuthInterceptor implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-        
+
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -28,8 +29,9 @@ public class StompAuthInterceptor implements ChannelInterceptor {
                     if (secret == null) {
                         secret = System.getProperty("SECRET_KEY");
                     }
-                    Claims claims = Jwts.parser()
-                            .setSigningKey(secret)
+                    Claims claims = Jwts.parserBuilder()
+                            .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+                            .build()
                             .parseClaimsJws(token)
                             .getBody();
                     String username = claims.getSubject();

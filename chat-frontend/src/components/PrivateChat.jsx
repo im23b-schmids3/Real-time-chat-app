@@ -66,10 +66,6 @@ function PrivateChat({ username }) {
             console.log("Sende private Nachricht an", partner && partner.id, "Inhalt:", newMessage);
             console.log("stompClient connected:", stompClient && stompClient.connected);
             try {
-                setMessages(prev => [
-                    ...prev,
-                    { sender: username, content: newMessage, timestamp: new Date().toISOString() }
-                ]);
                 stompClient.publish({
                     destination: `/app/chat.private.${partner.id}`,
                     body: JSON.stringify({ sender: username, content: newMessage })
