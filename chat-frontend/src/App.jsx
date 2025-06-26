@@ -57,7 +57,12 @@ function App({ username }) {
         <div className="chat-container">
             <div className="chat-messages">
                 {messages.map((msg, index) => (
-                    <div key={index} className="message">
+                    <div
+                        key={index}
+                        className={
+                            'message' + (msg.sender === username ? ' own' : '')
+                        }
+                    >
                         <div className="message-sender">{msg.sender}</div>
                         <div className="message-content">{msg.content}</div>
                     </div>

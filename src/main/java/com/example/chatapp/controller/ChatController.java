@@ -60,7 +60,8 @@ public class ChatController {
         message.setSender(principal.getName());
         message.setTimestamp(pm.getTimestamp().toString());
 
-        messagingTemplate.convertAndSendToUser(receiverId.toString(), "/queue/private", message);
-        messagingTemplate.convertAndSendToUser(senderId.toString(), "/queue/private", message);
+        String receiverName = userRepository.findById(receiverId).get().getName();
+        messagingTemplate.convertAndSendToUser(receiverName, "/queue/private", message);
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/private", message);
     }
 }
