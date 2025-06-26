@@ -11,9 +11,19 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final String secret = System.getProperty("SECRET_KEY");
-    private final Key key = Keys.hmacShaKeyFor(secret.getBytes());
+    private final String secret;
+    private final Key key;
     private final long EXPIRATION_TIME = 864_000_000;
+
+    public JwtUtil() {
+        String envSecret = System.getenv("SECRET_KEY");
+        if (envSecret != null) {
+            this.secret = envSecret;
+        } else {
+            this.secret = System.getProperty("SECRET_KEY");
+        }
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     public String generateToken(String username) {
         return Jwts.builder()
