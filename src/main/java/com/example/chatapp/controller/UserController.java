@@ -93,7 +93,8 @@ public class UserController {
             Integer partnerId = msg.getSenderId().equals(current.getId()) ? msg.getReceiverId() : msg.getSenderId();
             User partner = userRepository.findById(partnerId).orElse(null);
             String partnerName = partner != null ? partner.getName() : "Unbekannt";
-            return new ChatOverviewDTO(partnerId, partnerName, msg.getContent(), msg.getTimestamp());
+            boolean lastSentByMe = msg.getSenderId().equals(current.getId());
+            return new ChatOverviewDTO(partnerId, partnerName, msg.getContent(), msg.getTimestamp(), lastSentByMe);
         }).toList();
         return ResponseEntity.ok(overview);
     }

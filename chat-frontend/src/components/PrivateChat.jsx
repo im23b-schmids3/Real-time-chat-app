@@ -12,6 +12,11 @@ function PrivateChat({ username }) {
     const [partner, setPartner] = useState(null);
     const [activeChatId, setActiveChatId] = useState(null);
 
+    const handleSelectChat = (conv) => {
+        setPartner({ id: conv.partnerId, name: conv.partnerName });
+        setActiveChatId(conv.partnerId);
+    };
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         const socket = new SockJS(`http://localhost:8080/ws?token=${token}`);
@@ -54,7 +59,7 @@ function PrivateChat({ username }) {
                 } catch {}
             })();
         }
-    }, [activeChatId]);
+    }, [activeChatId, partner]);
 
     const searchUser = async () => {
         try {
@@ -65,6 +70,7 @@ function PrivateChat({ username }) {
             if (!res.ok) throw new Error('Benutzer nicht gefunden');
             const data = await res.json();
             setPartner(data);
+            setActiveChatId(data.id);
             const histRes = await fetch(`http://localhost:8080/api/messages/${data.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -107,7 +113,7 @@ function PrivateChat({ username }) {
 
     return (
         <div className="chat-wrapper">
-            <ChatList onSelectChat={setActiveChatId} activeChatId={activeChatId} />
+            <ChatList onSelectChat={handleSelectChat} activeChatId={activeChatId} />
             <div className="chat-container">
                 <div className="search-container" style={{ boxShadow: '0 2px 8px rgba(44,62,80,0.06)', background: '#fff', borderRadius: 'var(--border-radius)', marginBottom: 0 }}>
                     <span style={{ color: 'var(--primary-color)', fontSize: 20, marginRight: 8 }}><FaSearch /></span>
