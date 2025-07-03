@@ -41,4 +41,4 @@ const ChatList = ({ onSelectChat, activeChatId }) => {
     );
 };
 
-export default ChatList;
+export default ChatList; 
