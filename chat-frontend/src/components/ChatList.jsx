@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import '../styles/common.css';
 
-const ChatList = ({ onSelectChat, activeChatId }) => {
+const ChatList = ({onSelectChat, activeChatId, refreshKey = 0}) => {
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        fetch('http://localhost:8080/api/conversations', {
-            headers: { Authorization: `Bearer ${token}` }
-        })
-            .then(res => res.json())
-            .then(data => {
-                setConversations(data);
+        const fetchConversations = async () => {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch('http://localhost:8080/api/conversations', {
+                    headers: {Authorization: `Bearer ${token}`},
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setConversations(data);
+                }
+            } finally {
                 setLoading(false);
-            })
-            .catch(() => setLoading(false));
-    }, []);
+            }
+        };
+        fetchConversations();
+    }, [refreshKey]);
 
     if (loading) return <div className="chat-list">Lädt...</div>;
 

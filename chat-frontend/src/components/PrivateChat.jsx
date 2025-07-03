@@ -11,10 +11,34 @@ function PrivateChat({ username }) {
     const [searchEmail, setSearchEmail] = useState('');
     const [partner, setPartner] = useState(null);
     const [activeChatId, setActiveChatId] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const fetchHistory = async (id, name) => {
+        try {
+            const token = localStorage.getItem('token');
+            const histRes = await fetch(`http://localhost:8080/api/messages/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (histRes.ok) {
+                const hist = await histRes.json();
+                setAllMessages(
+                    hist.map((m) => ({
+                        ...m,
+                        sender: m.senderId === id ? name : username,
+                    }))
+                );
+            } else {
+                setAllMessages([]);
+            }
+        } catch {
+            setAllMessages([]);
+        }
+    };
 
     const handleSelectChat = (conv) => {
         setPartner({ id: conv.partnerId, name: conv.partnerName });
         setActiveChatId(conv.partnerId);
+        fetchHistory(conv.partnerId, conv.partnerName);
     };
 
     useEffect(() => {
@@ -28,7 +52,8 @@ function PrivateChat({ username }) {
             onConnect: () => {
                 client.subscribe('/user/queue/private', (msg) => {
                     const body = JSON.parse(msg.body);
-                    setAllMessages(prev => [...prev, body]);
+                    setAllMessages((prev) => [...prev, body]);
+                    setRefreshKey((k) => k + 1);
                 });
             }
         });
@@ -39,27 +64,6 @@ function PrivateChat({ username }) {
         };
     }, []);
 
-    useEffect(() => {
-        if (activeChatId) {
-            (async () => {
-                try {
-                    const token = localStorage.getItem('token');
-                    const histRes = await fetch(`http://localhost:8080/api/messages/${activeChatId}`, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
-                    if (histRes.ok) {
-                        const hist = await histRes.json();
-                        setAllMessages(hist.map(m => ({
-                            ...m,
-                            sender: m.senderId === activeChatId ? (partner ? partner.name : 'Partner') : username
-                        })));
-                    } else {
-                        setAllMessages([]);
-                    }
-                } catch {}
-            })();
-        }
-    }, [activeChatId, partner]);
 
     const searchUser = async () => {
         try {
@@ -71,18 +75,7 @@ function PrivateChat({ username }) {
             const data = await res.json();
             setPartner(data);
             setActiveChatId(data.id);
-            const histRes = await fetch(`http://localhost:8080/api/messages/${data.id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (histRes.ok) {
-                const hist = await histRes.json();
-                setAllMessages(hist.map(m => ({
-                    ...m,
-                    sender: m.senderId === data.id ? data.name : username
-                })));
-            } else {
-                setAllMessages([]);
-            }
+            await fetchHistory(data.id, data.name);
         } catch (err) {
             console.error(err);
             setPartner(null);
@@ -103,17 +96,17 @@ function PrivateChat({ username }) {
                 console.error("Fehler beim Senden der Nachricht:", e);
             }
             setNewMessage('');
+            setRefreshKey((k) => k + 1);
         }
     };
 
-    const messages = allMessages.filter(m =>
-        (m.senderId === activeChatId && m.receiverId === partner?.id) ||
-        (m.senderId === partner?.id && m.receiverId === activeChatId)
+    const messages = allMessages.filter(
+        (m) => m.senderId === activeChatId || m.receiverId === activeChatId
     );
 
     return (
         <div className="chat-wrapper">
-            <ChatList onSelectChat={handleSelectChat} activeChatId={activeChatId} />
+            <ChatList onSelectChat={handleSelectChat} activeChatId={activeChatId} refreshKey={refreshKey} />
             <div className="chat-container">
                 <div className="search-container" style={{ boxShadow: '0 2px 8px rgba(44,62,80,0.06)', background: '#fff', borderRadius: 'var(--border-radius)', marginBottom: 0 }}>
                     <span style={{ color: 'var(--primary-color)', fontSize: 20, marginRight: 8 }}><FaSearch /></span>
