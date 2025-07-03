@@ -12,4 +12,5 @@ public class ChatOverviewDTO {
     private String partnerName;
     private String lastMessage;
     private LocalDateTime timestamp;
-} 
+    private boolean lastSentByMe;
+}
