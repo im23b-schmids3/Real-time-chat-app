@@ -5,6 +5,7 @@ import com.example.chatapp.repository.UserRepository;
 import com.example.chatapp.repository.PrivateMessageRepository;
 import com.example.chatapp.model.PrivateMessage;
 import com.example.chatapp.security.JwtUtil;
+import com.example.chatapp.model.ChatOverviewDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -82,5 +83,19 @@ public class UserController {
                 .findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderByTimestampAsc(
                         current.getId(), otherId, otherId, current.getId());
         return ResponseEntity.ok(msgs);
+    }
+
+    @GetMapping("/conversations")
+    public ResponseEntity<?> getConversations(Principal principal) {
+        User current = userRepository.findByName(principal.getName());
+        List<PrivateMessage> messages = privateMessageRepository.findLatestMessagesForUser(current.getId());
+        List<ChatOverviewDTO> overview = messages.stream().map(msg -> {
+            Integer partnerId = msg.getSenderId().equals(current.getId()) ? msg.getReceiverId() : msg.getSenderId();
+            User partner = userRepository.findById(partnerId).orElse(null);
+            String partnerName = partner != null ? partner.getName() : "Unbekannt";
+            boolean lastSentByMe = msg.getSenderId().equals(current.getId());
+            return new ChatOverviewDTO(partnerId, partnerName, msg.getContent(), msg.getTimestamp(), lastSentByMe);
+        }).toList();
+        return ResponseEntity.ok(overview);
     }
 }

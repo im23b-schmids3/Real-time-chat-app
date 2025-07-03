@@ -4,6 +4,8 @@ public class ChatMessage {
     private String sender;
     private String content;
     private String timestamp;
+    private Integer senderId;
+    private Integer receiverId;
 
     public ChatMessage() {}
 
@@ -35,5 +37,21 @@ public class ChatMessage {
 
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public Integer getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(Integer senderId) {
+        this.senderId = senderId;
+    }
+
+    public Integer getReceiverId() {
+        return receiverId;
+    }
+
+    public void setReceiverId(Integer receiverId) {
+        this.receiverId = receiverId;
     }
 }

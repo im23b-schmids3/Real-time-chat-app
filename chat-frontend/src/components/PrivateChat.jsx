@@ -2,13 +2,44 @@ import React, { useEffect, useState } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { FaSearch, FaUserCircle } from 'react-icons/fa';
+import ChatList from './ChatList';
 
 function PrivateChat({ username }) {
     const [stompClient, setStompClient] = useState(null);
-    const [messages, setMessages] = useState([]);
+    const [allMessages, setAllMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [searchEmail, setSearchEmail] = useState('');
     const [partner, setPartner] = useState(null);
+    const [activeChatId, setActiveChatId] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const fetchHistory = async (id, name) => {
+        try {
+            const token = localStorage.getItem('token');
+            const histRes = await fetch(`http://localhost:8080/api/messages/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (histRes.ok) {
+                const hist = await histRes.json();
+                setAllMessages(
+                    hist.map((m) => ({
+                        ...m,
+                        sender: m.senderId === id ? name : username,
+                    }))
+                );
+            } else {
+                setAllMessages([]);
+            }
+        } catch {
+            setAllMessages([]);
+        }
+    };
+
+    const handleSelectChat = (conv) => {
+        setPartner({ id: conv.partnerId, name: conv.partnerName });
+        setActiveChatId(conv.partnerId);
+        fetchHistory(conv.partnerId, conv.partnerName);
+    };
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -21,7 +52,8 @@ function PrivateChat({ username }) {
             onConnect: () => {
                 client.subscribe('/user/queue/private', (msg) => {
                     const body = JSON.parse(msg.body);
-                    setMessages(prev => [...prev, body]);
+                    setAllMessages((prev) => [...prev, body]);
+                    setRefreshKey((k) => k + 1);
                 });
             }
         });
@@ -32,6 +64,7 @@ function PrivateChat({ username }) {
         };
     }, []);
 
+
     const searchUser = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -41,23 +74,12 @@ function PrivateChat({ username }) {
             if (!res.ok) throw new Error('Benutzer nicht gefunden');
             const data = await res.json();
             setPartner(data);
-            const histRes = await fetch(`http://localhost:8080/api/messages/${data.id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (histRes.ok) {
-                const hist = await histRes.json();
-                setMessages(hist.map(m => ({
-                    sender: m.senderId === data.id ? data.name : username,
-                    content: m.content,
-                    timestamp: m.timestamp
-                })));
-            } else {
-                setMessages([]);
-            }
+            setActiveChatId(data.id);
+            await fetchHistory(data.id, data.name);
         } catch (err) {
             console.error(err);
             setPartner(null);
-            setMessages([]);
+            setAllMessages([]);
         }
     };
 
@@ -74,58 +96,66 @@ function PrivateChat({ username }) {
                 console.error("Fehler beim Senden der Nachricht:", e);
             }
             setNewMessage('');
+            setRefreshKey((k) => k + 1);
         }
     };
 
+    const messages = allMessages.filter(
+        (m) => m.senderId === activeChatId || m.receiverId === activeChatId
+    );
+
     return (
-        <div className="chat-container">
-            <div className="search-container" style={{ boxShadow: '0 2px 8px rgba(44,62,80,0.06)', background: '#fff', borderRadius: 'var(--border-radius)', marginBottom: 0 }}>
-                <span style={{ color: 'var(--primary-color)', fontSize: 20, marginRight: 8 }}><FaSearch /></span>
-                <input
-                    type="text"
-                    className="search-input"
-                    placeholder="E-Mail-Adresse eingeben..."
-                    value={searchEmail}
-                    onChange={(e) => setSearchEmail(e.target.value)}
-                    style={{ border: 'none', boxShadow: 'none', background: 'transparent' }}
-                />
-                <button className="search-button" onClick={searchUser} style={{ minWidth: 90 }}>Suchen</button>
-            </div>
-            {partner && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#f8f9fa', borderRadius: 'var(--border-radius)', margin: '18px 0 0 0', padding: '12px 24px', boxShadow: '0 1px 4px rgba(44,62,80,0.04)' }}>
-                    <span style={{ fontSize: 32, color: 'var(--primary-color)' }}><FaUserCircle /></span>
-                    <div>
-                        <div style={{ fontWeight: 600, fontSize: 18, color: 'var(--secondary-color)' }}>{partner.name}</div>
-                        <div style={{ fontSize: 14, color: '#888' }}>{partner.email}</div>
-                    </div>
-                </div>
-            )}
-            <div className="chat-messages">
-                {messages.map((msg, idx) => (
-                    <div
-                        key={idx}
-                        className={
-                            'message' + (msg.sender === username ? ' own' : '')
-                        }
-                    >
-                        <div className="message-sender">{msg.sender}</div>
-                        <div className="message-content">{msg.content}</div>
-                    </div>
-                ))}
-            </div>
-            {partner && (
-                <div className="chat-input-container">
+        <div className="chat-wrapper">
+            <ChatList onSelectChat={handleSelectChat} activeChatId={activeChatId} refreshKey={refreshKey} />
+            <div className="chat-container">
+                <div className="search-container" style={{ boxShadow: '0 2px 8px rgba(44,62,80,0.06)', background: '#fff', borderRadius: 'var(--border-radius)', marginBottom: 0 }}>
+                    <span style={{ color: 'var(--primary-color)', fontSize: 20, marginRight: 8 }}><FaSearch /></span>
                     <input
-                        className="chat-input"
                         type="text"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                        placeholder="Nachricht schreiben"
+                        className="search-input"
+                        placeholder="E-Mail-Adresse eingeben..."
+                        value={searchEmail}
+                        onChange={(e) => setSearchEmail(e.target.value)}
+                        style={{ border: 'none', boxShadow: 'none', background: 'transparent' }}
                     />
-                    <button className="chat-button" onClick={sendMessage}>Senden</button>
+                    <button className="search-button" onClick={searchUser} style={{ minWidth: 90 }}>Suchen</button>
                 </div>
-            )}
+                {partner && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#f8f9fa', borderRadius: 'var(--border-radius)', margin: '18px 0 0 0', padding: '12px 24px', boxShadow: '0 1px 4px rgba(44,62,80,0.04)' }}>
+                        <span style={{ fontSize: 32, color: 'var(--primary-color)' }}><FaUserCircle /></span>
+                        <div>
+                            <div style={{ fontWeight: 600, fontSize: 18, color: 'var(--secondary-color)' }}>{partner.name}</div>
+                            <div style={{ fontSize: 14, color: '#888' }}>{partner.email}</div>
+                        </div>
+                    </div>
+                )}
+                <div className="chat-messages">
+                    {messages.map((msg, idx) => (
+                        <div
+                            key={idx}
+                            className={
+                                'message' + (msg.sender === username ? ' own' : '')
+                            }
+                        >
+                            <div className="message-sender">{msg.sender}</div>
+                            <div className="message-content">{msg.content}</div>
+                        </div>
+                    ))}
+                </div>
+                {partner && (
+                    <div className="chat-input-container">
+                        <input
+                            className="chat-input"
+                            type="text"
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                            placeholder="Nachricht schreiben"
+                        />
+                        <button className="chat-button" onClick={sendMessage}>Senden</button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

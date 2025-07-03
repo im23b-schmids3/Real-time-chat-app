@@ -58,6 +58,8 @@ public class ChatController {
         privateMessageRepository.save(pm);
 
         message.setSender(principal.getName());
+        message.setSenderId(senderId);
+        message.setReceiverId(receiverId);
         message.setTimestamp(pm.getTimestamp().toString());
 
         String receiverName = userRepository.findById(receiverId).get().getName();
