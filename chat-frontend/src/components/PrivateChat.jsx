@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { FaSearch, FaUserCircle } from 'react-icons/fa';
+import { FaSearch, FaUserCircle, FaPaperPlane } from 'react-icons/fa';
 import ChatList from './ChatList';
 
 function PrivateChat({ username }) {
@@ -106,20 +106,8 @@ function PrivateChat({ username }) {
 
     return (
         <div className="chat-wrapper">
-            <ChatList onSelectChat={handleSelectChat} activeChatId={activeChatId} refreshKey={refreshKey} />
+            <ChatList onSelectChat={handleSelectChat} activeChatId={activeChatId} refreshKey={refreshKey} searchEmail={searchEmail} setSearchEmail={setSearchEmail} searchUser={searchUser} />
             <div className="chat-container">
-                <div className="search-container" style={{ boxShadow: '0 2px 8px rgba(44,62,80,0.06)', background: '#fff', borderRadius: 'var(--border-radius)', marginBottom: 0 }}>
-                    <span style={{ color: 'var(--primary-color)', fontSize: 20, marginRight: 8 }}><FaSearch /></span>
-                    <input
-                        type="text"
-                        className="search-input"
-                        placeholder="E-Mail-Adresse eingeben..."
-                        value={searchEmail}
-                        onChange={(e) => setSearchEmail(e.target.value)}
-                        style={{ border: 'none', boxShadow: 'none', background: 'transparent' }}
-                    />
-                    <button className="search-button" onClick={searchUser} style={{ minWidth: 90 }}>Suchen</button>
-                </div>
                 {partner && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#f8f9fa', borderRadius: 'var(--border-radius)', margin: '18px 0 0 0', padding: '12px 24px', boxShadow: '0 1px 4px rgba(44,62,80,0.04)' }}>
                         <span style={{ fontSize: 32, color: 'var(--primary-color)' }}><FaUserCircle /></span>
@@ -152,7 +140,9 @@ function PrivateChat({ username }) {
                             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                             placeholder="Nachricht schreiben"
                         />
-                        <button className="chat-button" onClick={sendMessage}>Senden</button>
+                        <button className="chat-button" onClick={sendMessage} title="Senden">
+                            <FaPaperPlane />
+                        </button>
                     </div>
                 )}
             </div>
