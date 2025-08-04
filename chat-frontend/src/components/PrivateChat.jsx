@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { FaSearch, FaUserCircle, FaPaperPlane } from 'react-icons/fa';
+import { FaUserCircle, FaPaperPlane, FaEllipsisV } from 'react-icons/fa';
 import ChatList from './ChatList';
 
 function PrivateChat({ username }) {
@@ -64,7 +64,6 @@ function PrivateChat({ username }) {
         };
     }, []);
 
-
     const searchUser = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -100,50 +99,115 @@ function PrivateChat({ username }) {
         }
     };
 
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
     const messages = allMessages.filter(
         (m) => m.senderId === activeChatId || m.receiverId === activeChatId
     );
 
     return (
         <div className="chat-wrapper">
-            <ChatList onSelectChat={handleSelectChat} activeChatId={activeChatId} refreshKey={refreshKey} searchEmail={searchEmail} setSearchEmail={setSearchEmail} searchUser={searchUser} />
+            <ChatList 
+                onSelectChat={handleSelectChat} 
+                activeChatId={activeChatId} 
+                refreshKey={refreshKey} 
+                searchEmail={searchEmail} 
+                setSearchEmail={setSearchEmail} 
+                searchUser={searchUser} 
+            />
             <div className="chat-container">
-                {partner && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#f8f9fa', borderRadius: 'var(--border-radius)', margin: '18px 0 0 0', padding: '12px 24px', boxShadow: '0 1px 4px rgba(44,62,80,0.04)' }}>
-                        <span style={{ fontSize: 32, color: 'var(--primary-color)' }}><FaUserCircle /></span>
-                        <div>
-                            <div style={{ fontWeight: 600, fontSize: 18, color: 'var(--secondary-color)' }}>{partner.name}</div>
-                            <div style={{ fontSize: 14, color: '#888' }}>{partner.email}</div>
+                {partner ? (
+                    <>
+                        {/* Chat Header */}
+                        <div className="chat-header">
+                            <div className="chat-header-avatar">
+                                {partner.name ? partner.name.charAt(0).toUpperCase() : '?'}
+                            </div>
+                            <div className="chat-header-info">
+                                <div className="chat-header-name">{partner.name}</div>
+                            </div>
+                            <div className="chat-header-actions">
+                                <button className="chat-header-button">
+                                    <FaEllipsisV />
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                )}
-                <div className="chat-messages">
-                    {messages.map((msg, idx) => (
-                        <div
-                            key={idx}
-                            className={
-                                'message' + (msg.sender === username ? ' own' : '')
-                            }
-                        >
-                            <div className="message-sender">{msg.sender}</div>
-                            <div className="message-content">{msg.content}</div>
+
+                        {/* Messages Area */}
+                        <div className="chat-messages">
+                            {messages.map((msg, idx) => (
+                                <div
+                                    key={idx}
+                                    className={`message${msg.sender === username ? ' own' : ''}`}
+                                >
+                                    {msg.sender !== username && (
+                                        <div className="message-sender">{msg.sender}</div>
+                                    )}
+                                    <div className="message-content">{msg.content}</div>
+                                    <div className="message-time">
+                                        {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-                {partner && (
-                    <div className="chat-input-container">
-                        <input
-                            className="chat-input"
-                            type="text"
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                            placeholder="Nachricht schreiben"
-                        />
-                        <button className="chat-button" onClick={sendMessage} title="Senden">
-                            <FaPaperPlane />
-                        </button>
-                    </div>
+
+                        {/* Input Area */}
+                        <div className="chat-input-container">
+                            <div className="chat-input-wrapper">
+                                <input
+                                    className="chat-input"
+                                    type="text"
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    placeholder="Nachricht eingeben..."
+                                />
+                                <div className="chat-input-actions">
+                                    <button className="chat-input-button">😊</button>
+                                </div>
+                            </div>
+                            <button onClick={sendMessage} className="chat-send-button">
+                                <FaPaperPlane />
+                            </button>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        {/* Empty State */}
+                        <div className="chat-header">
+                            <div className="chat-header-avatar">
+                                <FaUserCircle />
+                            </div>
+                            <div className="chat-header-info">
+                                <div className="chat-header-name">Wähle einen Chat aus</div>
+                                <div className="chat-header-status">Kein Chat ausgewählt</div>
+                            </div>
+                        </div>
+                        <div className="chat-messages">
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                height: '100%',
+                                color: '#667781',
+                                fontSize: '16px',
+                                textAlign: 'center'
+                            }}>
+                                <div>
+                                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>💬</div>
+                                    <div>Wähle einen Chat aus der Liste aus</div>
+                                    <div style={{ fontSize: '14px', marginTop: '8px', opacity: 0.7 }}>
+                                        oder suche nach einem Benutzer
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </>
                 )}
             </div>
         </div>

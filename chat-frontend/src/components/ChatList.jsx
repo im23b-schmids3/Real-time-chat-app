@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import '../styles/common.css';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaEllipsisV } from 'react-icons/fa';
 
 const ChatList = ({onSelectChat, activeChatId, refreshKey = 0, searchEmail, setSearchEmail, searchUser}) => {
     const [conversations, setConversations] = useState([]);
@@ -24,44 +24,101 @@ const ChatList = ({onSelectChat, activeChatId, refreshKey = 0, searchEmail, setS
         fetchConversations();
     }, [refreshKey]);
 
-    if (loading) return <div className="chat-list">Lädt...</div>;
+    if (loading) return (
+        <div className="chat-list">
+            <div className="chat-header">
+                <div className="chat-header-title">Chats</div>
+                <div className="chat-header-actions">
+                    <button className="chat-header-button">
+                        <FaEllipsisV />
+                    </button>
+                </div>
+            </div>
+            <div style={{ padding: '20px', textAlign: 'center', color: '#667781' }}>
+                Lädt...
+            </div>
+        </div>
+    );
 
     return (
         <div className="chat-list">
-            <div className="search-container" style={{ boxShadow: '0 2px 8px rgba(44,62,80,0.06)', background: '#fff', borderRadius: 'var(--border-radius)', marginBottom: 0, padding: '16px 18px 8px 18px' }}>
-                <span style={{ color: 'var(--primary-color)', fontSize: 20, marginRight: 8 }}><FaSearch /></span>
-                <input
-                    type="text"
-                    className="search-input"
-                    placeholder="E-Mail-Adresse eingeben..."
-                    value={searchEmail}
-                    onChange={(e) => setSearchEmail(e.target.value)}
-                    style={{ border: 'none', boxShadow: 'none', background: 'transparent' }}
-                />
-                <button className="search-button" onClick={searchUser} style={{ minWidth: 90 }}>Suchen</button>
+            {/* Chat Header */}
+            <div className="chat-header">
+                <div className="chat-header-title">Chats</div>
+                <div className="chat-header-actions">
+                    <button className="chat-header-button">
+                        <FaEllipsisV />
+                    </button>
+                </div>
             </div>
-            {conversations.length === 0 && <div>Keine Chats vorhanden.</div>}
-            {conversations.map(conv => (
-                <div
-                    key={conv.partnerId}
-                    className={`chat-list-item${activeChatId === conv.partnerId ? ' active' : ''}`}
-                    onClick={() => onSelectChat(conv)}
-                >
-                    <div style={{display: 'flex', alignItems: 'center', gap: 14}}>
+
+            {/* Search Container */}
+            <div className="search-container">
+                <div className="search-input-wrapper">
+                    <span className="search-icon">
+                        <FaSearch />
+                    </span>
+                    <input
+                        type="text"
+                        className="search-input"
+                        placeholder="E-Mail-Adresse eingeben..."
+                        value={searchEmail}
+                        onChange={(e) => setSearchEmail(e.target.value)}
+                    />
+                    <button 
+                        className="search-button" 
+                        onClick={searchUser}
+                        style={{ 
+                            background: 'var(--primary-color)', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '6px', 
+                            padding: '6px 12px', 
+                            fontSize: '14px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Suchen
+                    </button>
+                </div>
+            </div>
+
+            {/* Chat List */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+                {conversations.length === 0 && (
+                    <div style={{ 
+                        padding: '40px 20px', 
+                        textAlign: 'center', 
+                        color: '#667781',
+                        fontSize: '14px'
+                    }}>
+                        Keine Chats vorhanden.
+                    </div>
+                )}
+                {conversations.map(conv => (
+                    <div
+                        key={conv.partnerId}
+                        className={`chat-list-item${activeChatId === conv.partnerId ? ' active' : ''}`}
+                        onClick={() => onSelectChat(conv)}
+                    >
                         <div className="chat-list-avatar">
                             {conv.partnerName ? conv.partnerName.charAt(0).toUpperCase() : '?'}
                         </div>
-                        <div style={{flex: 1}}>
-                            <div className="chat-list-name">{conv.partnerName}</div>
+                        <div className="chat-list-content">
+                            <div className="chat-list-header">
+                                <div className="chat-list-name">{conv.partnerName}</div>
+                                <div className="chat-list-time">
+                                    {new Date(conv.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                </div>
+                            </div>
                             <div className="chat-list-last">
                                 {conv.lastSentByMe ? 'Du: ' : `${conv.partnerName}: `}
                                 {conv.lastMessage}
                             </div>
                         </div>
-                        <div className="chat-list-time">{new Date(conv.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
     );
 };
