@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { FaPaperPlane, FaEllipsisV } from 'react-icons/fa';
 import './styles/common.css';
+import 'emoji-picker-element';
 
 function App({ username }) {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [stompClient, setStompClient] = useState(null);
     const [selectedChat, setSelectedChat] = useState(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const emojiPickerRef = useRef(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -40,6 +43,22 @@ function App({ username }) {
         };
     }, []);
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+                setShowEmojiPicker(false);
+            }
+        };
+
+        if (showEmojiPicker) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showEmojiPicker]);
+
     const sendMessage = () => {
         if (newMessage.trim() && stompClient) {
             const message = {
@@ -60,6 +79,15 @@ function App({ username }) {
             e.preventDefault();
             sendMessage();
         }
+    };
+
+    const toggleEmojiPicker = () => {
+        setShowEmojiPicker(!showEmojiPicker);
+    };
+
+    const handleEmojiClick = (event) => {
+        setNewMessage(prev => prev + event.detail.unicode);
+        setShowEmojiPicker(false);
     };
 
     return (
@@ -134,6 +162,21 @@ function App({ username }) {
                 {/* Input Area */}
                 <div className="chat-input-container">
                     <div className="chat-input-wrapper">
+                        <div className="chat-input-actions">
+                            <button 
+                                className="chat-input-button" 
+                                onClick={toggleEmojiPicker}
+                            >
+                                😊
+                            </button>
+                            {showEmojiPicker && (
+                                <div className="emoji-picker" ref={emojiPickerRef}>
+                                    <emoji-picker 
+                                        onEmojiClick={handleEmojiClick}
+                                    ></emoji-picker>
+                                </div>
+                            )}
+                        </div>
                         <input
                             className="chat-input"
                             type="text"
@@ -142,9 +185,6 @@ function App({ username }) {
                             onKeyPress={handleKeyPress}
                             placeholder="Nachricht eingeben..."
                         />
-                        <div className="chat-input-actions">
-                            <button className="chat-input-button">😊</button>
-                        </div>
                     </div>
                     <button onClick={sendMessage} className="chat-send-button">
                         <FaPaperPlane />

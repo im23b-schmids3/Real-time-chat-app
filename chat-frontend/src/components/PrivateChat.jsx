@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { FaUserCircle, FaPaperPlane, FaEllipsisV } from 'react-icons/fa';
 import ChatList from './ChatList';
+import 'emoji-picker-element';
 
-function PrivateChat({ username }) {
+function PrivateChat({ username, onLogout }) {
     const [stompClient, setStompClient] = useState(null);
     const [allMessages, setAllMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -12,6 +13,8 @@ function PrivateChat({ username }) {
     const [partner, setPartner] = useState(null);
     const [activeChatId, setActiveChatId] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const emojiPickerRef = useRef(null);
 
     const fetchHistory = async (id, name) => {
         try {
@@ -106,6 +109,31 @@ function PrivateChat({ username }) {
         }
     };
 
+    const toggleEmojiPicker = () => {
+        setShowEmojiPicker(!showEmojiPicker);
+    };
+
+    const handleEmojiClick = (event) => {
+        setNewMessage(prev => prev + event.detail.unicode);
+        setShowEmojiPicker(false);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+                setShowEmojiPicker(false);
+            }
+        };
+
+        if (showEmojiPicker) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showEmojiPicker]);
+
     const messages = allMessages.filter(
         (m) => m.senderId === activeChatId || m.receiverId === activeChatId
     );
@@ -119,6 +147,7 @@ function PrivateChat({ username }) {
                 searchEmail={searchEmail} 
                 setSearchEmail={setSearchEmail} 
                 searchUser={searchUser} 
+                onLogout={onLogout}
             />
             <div className="chat-container">
                 {partner ? (
@@ -159,6 +188,21 @@ function PrivateChat({ username }) {
                         {/* Input Area */}
                         <div className="chat-input-container">
                             <div className="chat-input-wrapper">
+                                <div className="chat-input-actions">
+                                    <button 
+                                        className="chat-input-button" 
+                                        onClick={toggleEmojiPicker}
+                                    >
+                                        😊
+                                    </button>
+                                    {showEmojiPicker && (
+                                        <div className="emoji-picker" ref={emojiPickerRef}>
+                                            <emoji-picker 
+                                                onEmojiClick={handleEmojiClick}
+                                            ></emoji-picker>
+                                        </div>
+                                    )}
+                                </div>
                                 <input
                                     className="chat-input"
                                     type="text"
@@ -167,9 +211,6 @@ function PrivateChat({ username }) {
                                     onKeyPress={handleKeyPress}
                                     placeholder="Nachricht eingeben..."
                                 />
-                                <div className="chat-input-actions">
-                                    <button className="chat-input-button">😊</button>
-                                </div>
                             </div>
                             <button onClick={sendMessage} className="chat-send-button">
                                 <FaPaperPlane />

@@ -108,7 +108,7 @@ body {
     text-align: center;
 }
 
-/* WhatsApp-like Layout */
+/* Layout */
 .chat-wrapper {
     display: flex;
     height: 100vh;
@@ -149,6 +149,36 @@ body {
     display: flex;
     gap: 16px;
     align-items: center;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    position: absolute;
+    top: 48px;
+    right: 8px;
+    background: #fff;
+    border: 1px solid #e9edef;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    min-width: 160px;
+    z-index: 1000;
+    padding: 6px;
+}
+
+.dropdown-item {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--secondary-color);
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background: #f5f6f6;
 }
 
 .chat-header-button {
@@ -389,26 +419,22 @@ body {
 }
 
 .chat-input-wrapper {
-    flex: 1;
-    background: #fff;
-    border-radius: 8px;
-    padding: 9px 12px;
     display: flex;
     align-items: center;
     gap: 8px;
-    border: 1px solid #e9edef;
+    background: var(--chat-sidebar-bg);
+    border-radius: 20px;
+    padding: 8px 16px;
+    flex: 1;
 }
 
 .chat-input {
     flex: 1;
     border: none;
     background: transparent;
+    outline: none;
     font-size: 15px;
     color: var(--text-color);
-    outline: none;
-    resize: none;
-    max-height: 100px;
-    min-height: 20px;
 }
 
 .chat-input::placeholder {
@@ -416,24 +442,23 @@ body {
 }
 
 .chat-input-actions {
+    position: relative;
     display: flex;
     gap: 8px;
-    align-items: center;
 }
 
 .chat-input-button {
     background: none;
     border: none;
-    color: #54656f;
     font-size: 20px;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
+    padding: 4px;
+    border-radius: 4px;
     transition: background-color 0.2s;
 }
 
 .chat-input-button:hover {
-    background-color: #e9edef;
+    background-color: var(--chat-header-bg);
 }
 
 .chat-send-button {
@@ -452,6 +477,23 @@ body {
 
 .chat-send-button:hover {
     background: #357abd;
+}
+
+/* Emoji Picker */
+.emoji-picker {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    z-index: 1000;
+    margin-bottom: 8px;
+}
+
+.emoji-picker emoji-picker {
+    --border-radius: 8px;
+    --border-color: var(--chat-header-bg);
+    --background: var(--chat-sidebar-bg);
+    --category-emoji-padding: 8px;
+    --emoji-size: 1.5rem;
 }
 
 /* Responsive Design */

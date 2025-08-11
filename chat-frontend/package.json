@@ -4,10 +4,11 @@
   "private": true,
   "dependencies": {
     "@stomp/stompjs": "^7.1.1",
+    "emoji-picker-element": "^1.26.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "sockjs-client": "^1.6.1"
   },
   "scripts": {

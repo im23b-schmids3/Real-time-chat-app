@@ -2,9 +2,10 @@ import React, {useEffect, useState} from 'react';
 import '../styles/common.css';
 import { FaSearch, FaEllipsisV } from 'react-icons/fa';
 
-const ChatList = ({onSelectChat, activeChatId, refreshKey = 0, searchEmail, setSearchEmail, searchUser}) => {
+const ChatList = ({onSelectChat, activeChatId, refreshKey = 0, searchEmail, setSearchEmail, searchUser, onLogout}) => {
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         const fetchConversations = async () => {
@@ -28,10 +29,17 @@ const ChatList = ({onSelectChat, activeChatId, refreshKey = 0, searchEmail, setS
         <div className="chat-list">
             <div className="chat-header">
                 <div className="chat-header-title">Chats</div>
-                <div className="chat-header-actions">
-                    <button className="chat-header-button">
+                <div className="chat-header-actions" style={{ position: 'relative' }}>
+                    <button className="chat-header-button" onClick={() => setMenuOpen((v) => !v)}>
                         <FaEllipsisV />
                     </button>
+                    {menuOpen && (
+                        <div className="dropdown-menu">
+                            <button className="dropdown-item" onClick={() => { setMenuOpen(false); onLogout && onLogout(); }}>
+                                Abmelden
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
             <div style={{ padding: '20px', textAlign: 'center', color: '#667781' }}>
@@ -45,10 +53,17 @@ const ChatList = ({onSelectChat, activeChatId, refreshKey = 0, searchEmail, setS
             {/* Chat Header */}
             <div className="chat-header">
                 <div className="chat-header-title">Chats</div>
-                <div className="chat-header-actions">
-                    <button className="chat-header-button">
+                <div className="chat-header-actions" style={{ position: 'relative' }}>
+                    <button className="chat-header-button" onClick={() => setMenuOpen((v) => !v)}>
                         <FaEllipsisV />
                     </button>
+                    {menuOpen && (
+                        <div className="dropdown-menu">
+                            <button className="dropdown-item" onClick={() => { setMenuOpen(false); onLogout && onLogout(); }}>
+                                Abmelden
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
