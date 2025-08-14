@@ -22,6 +22,9 @@ public class JwtUtil {
         } else {
             this.secret = System.getProperty("SECRET_KEY");
         }
+        if (this.secret == null || this.secret.getBytes().length < 32) {
+            throw new IllegalStateException("SECRET_KEY must be at least 32 bytes long");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 

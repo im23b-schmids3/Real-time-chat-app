@@ -11,7 +11,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
-import java.security.Principal;
 
 @Component
 public class StompAuthInterceptor implements ChannelInterceptor {
@@ -22,25 +21,26 @@ public class StompAuthInterceptor implements ChannelInterceptor {
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                try {
-                    String secret = System.getenv("SECRET_KEY");
-                    if (secret == null) {
-                        secret = System.getProperty("SECRET_KEY");
-                    }
-                    Claims claims = Jwts.parserBuilder()
-                            .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
-                            .build()
-                            .parseClaimsJws(token)
-                            .getBody();
-                    String username = claims.getSubject();
-                    accessor.setUser(() -> username);
-                } catch (Exception e) {
-                    System.out.println("STOMP Auth failed: " + e.getMessage());
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                throw new IllegalArgumentException("Missing Authorization header");
+            }
+            String token = authHeader.substring(7);
+            try {
+                String secret = System.getenv("SECRET_KEY");
+                if (secret == null) {
+                    secret = System.getProperty("SECRET_KEY");
+                }
+                Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody();
+                String username = claims.getSubject();
+                accessor.setUser(() -> username);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid JWT", e);
                 }
             }
-        }
         return message;
     }
 } 

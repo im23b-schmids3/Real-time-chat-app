@@ -47,7 +47,7 @@ function PrivateChat({ username, onLogout }) {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const socket = new SockJS(`http://localhost:8080/ws?token=${token}`);
+        const socket = new SockJS('http://localhost:8080/ws');
         const client = new Client({
             webSocketFactory: () => socket,
             connectHeaders: {

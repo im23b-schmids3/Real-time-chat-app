@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
-
+import java.util.Optional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 @Controller
 public class ChatController {
 
@@ -48,7 +50,9 @@ public class ChatController {
         if (principal == null) {
             return;
         }
-        Integer senderId = userRepository.findByName(principal.getName()).getId();
+        Integer senderId = Optional.ofNullable(userRepository.findByName(principal.getName()))
+                .map(user -> user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sender not found"));
 
         PrivateMessage pm = new PrivateMessage();
         pm.setSenderId(senderId);
@@ -62,7 +66,9 @@ public class ChatController {
         message.setReceiverId(receiverId);
         message.setTimestamp(pm.getTimestamp().toString());
 
-        String receiverName = userRepository.findById(receiverId).get().getName();
+        String receiverName = userRepository.findById(receiverId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Receiver not found"))
+                .getName();
         messagingTemplate.convertAndSendToUser(receiverName, "/queue/private", message);
         messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/private", message);
     }
