@@ -15,6 +15,7 @@ function PrivateChat({ username, onLogout }) {
     const [refreshKey, setRefreshKey] = useState(0);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const emojiPickerRef = useRef(null);
+    const pickerRef = useRef(null);
 
     const fetchHistory = async (id, name) => {
         try {
@@ -119,6 +120,18 @@ function PrivateChat({ username, onLogout }) {
     };
 
     useEffect(() => {
+        const picker = pickerRef.current;
+        if (picker) {
+            picker.addEventListener('emoji-click', handleEmojiClick);
+        }
+        return () => {
+            if (picker) {
+                picker.removeEventListener('emoji-click', handleEmojiClick);
+            }
+        };
+    }, [showEmojiPicker]);
+
+    useEffect(() => {
         const handleClickOutside = (event) => {
             if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
                 setShowEmojiPicker(false);
@@ -198,7 +211,7 @@ function PrivateChat({ username, onLogout }) {
                                     {showEmojiPicker && (
                                         <div className="emoji-picker" ref={emojiPickerRef}>
                                             <emoji-picker 
-                                                onEmojiClick={handleEmojiClick}
+                                                ref={pickerRef}
                                             ></emoji-picker>
                                         </div>
                                     )}

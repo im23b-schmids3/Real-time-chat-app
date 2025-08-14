@@ -12,6 +12,7 @@ function App({ username }) {
     const [selectedChat, setSelectedChat] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const emojiPickerRef = useRef(null);
+    const pickerRef = useRef(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -89,6 +90,18 @@ function App({ username }) {
         setNewMessage(prev => prev + event.detail.unicode);
         setShowEmojiPicker(false);
     };
+
+    useEffect(() => {
+        const picker = pickerRef.current;
+        if (picker) {
+            picker.addEventListener('emoji-click', handleEmojiClick);
+        }
+        return () => {
+            if (picker) {
+                picker.removeEventListener('emoji-click', handleEmojiClick);
+            }
+        };
+    }, [showEmojiPicker]);
 
     return (
         <div className="chat-wrapper">
@@ -172,7 +185,7 @@ function App({ username }) {
                             {showEmojiPicker && (
                                 <div className="emoji-picker" ref={emojiPickerRef}>
                                     <emoji-picker 
-                                        onEmojiClick={handleEmojiClick}
+                                        ref={pickerRef}
                                     ></emoji-picker>
                                 </div>
                             )}
