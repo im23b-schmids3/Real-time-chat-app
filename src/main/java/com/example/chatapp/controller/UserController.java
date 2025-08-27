@@ -6,6 +6,7 @@ import com.example.chatapp.repository.PrivateMessageRepository;
 import com.example.chatapp.model.PrivateMessage;
 import com.example.chatapp.security.JwtUtil;
 import com.example.chatapp.model.ChatOverviewDTO;
+import com.example.chatapp.security.EncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +31,9 @@ public class UserController {
 
     @Autowired
     private PrivateMessageRepository privateMessageRepository;
+
+    @Autowired
+    private EncryptionService encryptionService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
@@ -82,7 +86,16 @@ public class UserController {
         List<PrivateMessage> msgs = privateMessageRepository
                 .findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderByTimestampAsc(
                         current.getId(), otherId, otherId, current.getId());
-        return ResponseEntity.ok(msgs);
+        List<PrivateMessage> decrypted = msgs.stream().map(m -> {
+            PrivateMessage copy = new PrivateMessage();
+            copy.setId(m.getId());
+            copy.setSenderId(m.getSenderId());
+            copy.setReceiverId(m.getReceiverId());
+            copy.setTimestamp(m.getTimestamp());
+            copy.setEncryptedContent(encryptionService.decrypt(m.getEncryptedContent()));
+            return copy;
+        }).toList();
+        return ResponseEntity.ok(decrypted);
     }
 
     @GetMapping("/conversations")
@@ -94,7 +107,8 @@ public class UserController {
             User partner = userRepository.findById(partnerId).orElse(null);
             String partnerName = partner != null ? partner.getName() : "Unbekannt";
             boolean lastSentByMe = msg.getSenderId().equals(current.getId());
-            return new ChatOverviewDTO(partnerId, partnerName, msg.getContent(), msg.getTimestamp(), lastSentByMe);
+            String lastMessage = encryptionService.decrypt(msg.getEncryptedContent());
+            return new ChatOverviewDTO(partnerId, partnerName, lastMessage, msg.getTimestamp(), lastSentByMe);
         }).toList();
         return ResponseEntity.ok(overview);
     }
