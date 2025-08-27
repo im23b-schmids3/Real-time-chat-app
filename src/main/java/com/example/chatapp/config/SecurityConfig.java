@@ -1,6 +1,8 @@
 package com.example.chatapp.config;
 
 import com.example.chatapp.security.JwtFilter;
+import com.example.chatapp.security.EncryptionService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +26,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+
+    @Value("${app.encryption.key}")
+    private String encryptionKey;
 
     public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
@@ -75,5 +80,10 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public EncryptionService encryptionService() {
+        return new EncryptionService(encryptionKey);
     }
 }

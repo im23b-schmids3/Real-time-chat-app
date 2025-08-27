@@ -8,12 +8,21 @@ Dieses Projekt ist eine vollständige Echtzeit-Chat-Anwendung mit einem Java Spr
  - **Echtzeit-Nachrichtenübertragung** mit WebSockets </br>
  - **Frontend**: React (Create React App) </br>
  - **Backend**: Spring Boot, Spring Security, WebSocket, JPA (MySQL) </br>
- - **Sichere Kommunikation** durch JWT und eigene Security-Konfiguration </br>
+- **Sichere Kommunikation** durch JWT und eigene Security-Konfiguration </br>
+- **Verschlüsselung privater Nachrichten** (AES, serverseitig) </br>
 
 # Sicherheit
- - **JWT-Authentifizierung** für REST und WebSocket </br>
- - **Passwörter** werden **sicher** gespeichert </br>
- - **CORS** und **CSRF** konfiguriert
+- **JWT-Authentifizierung** für REST und WebSocket </br>
+- **Passwörter** werden **sicher** gespeichert </br>
+- **CORS** und **CSRF** konfiguriert
+
+## Verschlüsselung der Nachrichten
+
+Private Nachrichten werden vor dem Speichern in der Datenbank mit AES
+verschlüsselt. Der Schlüssel wird zur Laufzeit über die Umgebungsvariable
+`ENCRYPTION_KEY` bereitgestellt und in der `SecurityConfig` als Bean
+registriert. Beim Ausliefern an Clients entschlüsselt der Server die
+Nachrichten wieder.
 
 # Autor:
 

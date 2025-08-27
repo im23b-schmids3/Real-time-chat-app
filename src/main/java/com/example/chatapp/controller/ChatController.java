@@ -5,6 +5,7 @@ import com.example.chatapp.model.PrivateMessage;
 import com.example.chatapp.repository.PrivateMessageRepository;
 import com.example.chatapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.example.chatapp.security.EncryptionService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.security.Principal;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -29,6 +30,9 @@ public class ChatController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EncryptionService encryptionService;
 
     @GetMapping("/ws/info")
     @ResponseBody
@@ -57,13 +61,15 @@ public class ChatController {
         PrivateMessage pm = new PrivateMessage();
         pm.setSenderId(senderId);
         pm.setReceiverId(receiverId);
-        pm.setContent(message.getContent());
+        String encrypted = encryptionService.encrypt(message.getContent());
+        pm.setEncryptedContent(encrypted);
         pm.setTimestamp(LocalDateTime.now());
         privateMessageRepository.save(pm);
 
         message.setSender(principal.getName());
         message.setSenderId(senderId);
         message.setReceiverId(receiverId);
+        message.setContent(encryptionService.decrypt(pm.getEncryptedContent()));
         message.setTimestamp(pm.getTimestamp().toString());
 
         String receiverName = userRepository.findById(receiverId)
